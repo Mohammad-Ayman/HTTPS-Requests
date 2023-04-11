@@ -2,6 +2,7 @@
 const ulElement = document.querySelector("ul");
 const postTemplate = document.querySelector("template");
 const fetchButton = document.querySelector("#available-posts button");
+const addPostButton = document.querySelector("#new-post button");
 const deleteButton = postTemplate.content.querySelector("button");
 
 let posts = [];
@@ -25,14 +26,33 @@ const getPosts = async () => {
   updateUi();
 };
 
-const postElement = async () => {
+const postElement = async (title, body) => {
   try {
     const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
       method: "POST",
+      body: JSON.stringify({
+        title,
+        body,
+        userId: posts.length + 1,
+      }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
     });
   } catch (error) {
     console.log(error);
   }
+};
+
+const postHandler = (e) => {
+  e.preventDefault();
+  const title = document.getElementById("title").value.trim();
+  const body = document.getElementById("content").value.trim();
+  if (title != "" && body != "") {
+    console.log(posts.length);
+    console.log("Posting a new item");
+    postElement(title, body);
+  } else alert("Please fill the Title and Content");
 };
 
 const deletePost = async (postId) => {
@@ -82,3 +102,4 @@ const updateUi = () => {
 //EventListeners
 fetchButton.addEventListener("click", getPosts);
 ulElement.addEventListener("click", deleteHandler);
+addPostButton.addEventListener("click", postHandler);
