@@ -1,15 +1,16 @@
 //Global Variables
-const ulElement = document.querySelector("ul");
+const postsList = document.querySelector("ul");
 const postTemplate = document.querySelector("template");
 const fetchButton = document.querySelector("#available-posts button");
 const addPostButton = document.querySelector("#new-post button");
 const deleteButton = postTemplate.content.querySelector("button");
 
 let posts = [];
+let fetchedPosts = [];
 
 // HTTPS requests functions
 const getPosts = async () => {
-  posts = [];
+  fetchedPosts = [];
   try {
     const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
       method: "GET",
@@ -19,7 +20,8 @@ const getPosts = async () => {
     // data.forEach((element) => {
     //   posts.push(element);
     // });
-    posts = [...data]; ///////// Look Here!
+    fetchedPosts = [...data]; ///////// Look Here!
+    posts = [...data, ...posts];
   } catch (error) {
     console.log(error);
   }
@@ -39,20 +41,11 @@ const postElement = async (title, body) => {
         "Content-type": "application/json; charset=UTF-8",
       },
     });
+    const data = await res.json();
+    return data; // return the created post object
   } catch (error) {
     console.log(error);
   }
-};
-
-const postHandler = (e) => {
-  e.preventDefault();
-  const title = document.getElementById("title").value.trim();
-  const body = document.getElementById("content").value.trim();
-  if (title != "" && body != "") {
-    console.log(posts.length);
-    console.log("Posting a new item");
-    postElement(title, body);
-  } else alert("Please fill the Title and Content");
 };
 
 const deletePost = async (postId) => {
@@ -69,17 +62,6 @@ const deletePost = async (postId) => {
   }
 };
 
-const deleteHandler = (e) => {
-  if (e.target.tagName === "BUTTON") {
-    const postToBeDeleted = e.target.closest("li");
-    console.log(postToBeDeleted);
-    const postId = postToBeDeleted.querySelector("h5").textContent;
-    console.log(`Deleting post number: ${postId}`);
-    postToBeDeleted.remove();
-    deletePost(postId);
-  }
-};
-
 //Global functions
 const createPostElement = (post) => {
   const { title, body, id } = post; ///////// Look Here!
@@ -91,15 +73,41 @@ const createPostElement = (post) => {
 };
 
 const updateUi = () => {
-  ulElement.innerHTML = "";
+  postsList.innerHTML = "";
   console.log(posts);
   posts.forEach((post) => {
     const newLi = createPostElement(post);
-    ulElement.append(newLi);
+    postsList.append(newLi);
   });
+};
+
+//Handler Functions
+
+const postHandler = async (e) => {
+  e.preventDefault();
+  let title = document.getElementById("title").value.trim();
+  let body = document.getElementById("content").value.trim();
+  if (title != "" && body != "") {
+    console.log(posts.length + 1);
+    console.log("Posting a new item");
+    const createdPost = await postElement(title, body); // wait for the created post object
+    posts.push(createdPost); // push the created post object to the posts array
+    document.querySelector("form").reset();
+  } else alert("Please fill the Title and Content");
+};
+
+const deleteHandler = (e) => {
+  if (e.target.tagName === "BUTTON") {
+    const postToBeDeleted = e.target.closest("li");
+    console.log(postToBeDeleted);
+    const postId = postToBeDeleted.querySelector("h5").textContent;
+    console.log(`Deleting post number: ${postId}`);
+    postToBeDeleted.remove();
+    deletePost(postId);
+  }
 };
 
 //EventListeners
 fetchButton.addEventListener("click", getPosts);
-ulElement.addEventListener("click", deleteHandler);
+postsList.addEventListener("click", deleteHandler);
 addPostButton.addEventListener("click", postHandler);
