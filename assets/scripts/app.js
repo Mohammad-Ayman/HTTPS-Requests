@@ -12,11 +12,22 @@ let fetchedPosts = [];
 const getPosts = async () => {
   fetchedPosts = [];
   try {
-    const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
-      method: "GET",
-    });
-    const data = await res.json();
-    console.log(data);
+    /* Using Fetch()
+    // const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
+    // method: "GET",
+    // const data = await res.json();
+    */
+
+    /*
+    Using Axios library
+    */
+    const res = await axios.get(
+      "https://jsonplaceholder.typicode.com/posts",
+      {}
+    );
+    console.log(res);
+    const data = res.data;
+    console.log("Fetched Data: ", data);
     // data.forEach((element) => {
     //   posts.push(element);
     // });
@@ -24,37 +35,75 @@ const getPosts = async () => {
     posts = [...data, ...posts];
   } catch (error) {
     console.log(error);
+    alert(error.message);
   }
   updateUi();
 };
 
+// const postElement = async (title, body) => {
+//   try {
+//     const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
+//       method: "POST",
+//       body: JSON.stringify({
+//         title,
+//         body,
+//         userId: posts.length + 1,
+//       }),
+//       headers: {
+//         "Content-type": "application/json; charset=UTF-8",
+//       },
+//     });
+//     const data = await res.json();
+//     return data; // return the created post object
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
+/*
+  Using Axios library
+*/
 const postElement = async (title, body) => {
   try {
-    const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
-      method: "POST",
-      body: JSON.stringify({
-        title,
-        body,
-        userId: posts.length + 1,
-      }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    });
-    const data = await res.json();
+    const post = {
+      title,
+      body,
+      userId: posts.length + 1,
+    };
+    const res = await axios.post(
+      "https://jsonplaceholder.typicode.com/posts",
+      post
+    );
+    console.log("Post response", res);
+    const data = await res.data;
+    console.log("Post response data", data);
     return data; // return the created post object
   } catch (error) {
     console.log(error);
   }
 };
 
+// const deletePost = async (postId) => {
+//   try {
+//     const res = await fetch(
+//       `https://jsonplaceholder.typicode.com/posts/${postId}`,
+//       {
+//         method: "DELETE",
+//       }
+//     );
+//   } catch (error) {
+//     console.log(error);
+//     alert("An error occurred while deleting the post.");
+//   }
+// };
+
+/*
+  Using Axios library
+*/
 const deletePost = async (postId) => {
   try {
-    const res = await fetch(
-      `https://jsonplaceholder.typicode.com/posts/${postId}`,
-      {
-        method: "DELETE",
-      }
+    const res = await axios.delete(
+      `https://jsonplaceholder.typicode.com/posts/${postId}`
     );
   } catch (error) {
     console.log(error);
@@ -74,7 +123,7 @@ const createPostElement = (post) => {
 
 const updateUi = () => {
   postsList.innerHTML = "";
-  console.log(posts);
+  console.log("Displayed posts: ", posts);
   posts.forEach((post) => {
     const newLi = createPostElement(post);
     postsList.append(newLi);
@@ -82,16 +131,17 @@ const updateUi = () => {
 };
 
 //Handler Functions
-
 const postHandler = async (e) => {
   e.preventDefault();
   let title = document.getElementById("title").value.trim();
   let body = document.getElementById("content").value.trim();
   if (title != "" && body != "") {
-    console.log(posts.length + 1);
+    console.log("Posts array length: ", posts.length + 1);
     console.log("Posting a new item");
     const createdPost = await postElement(title, body); // wait for the created post object
     posts.push(createdPost); // push the created post object to the posts array
+    const newLi = createPostElement(createdPost);
+    postsList.append(newLi);
     document.querySelector("form").reset();
   } else alert("Please fill the Title and Content");
 };
